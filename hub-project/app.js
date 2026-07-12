@@ -34,7 +34,67 @@ const SAMPLE_MODULES = [
   }
 ];
 
+// ---------- Sample quiz data (stand-in for AI-generated quiz later) ----------
+// TODO: Replace this with a real call to your Firebase Cloud Function, which
+// asks the Claude API to generate questions from currentModule.content and
+// return them in this exact shape: { question, options: [...], correctIndex }
+const SAMPLE_QUIZZES = {
+  "mod-1": [
+    {
+      question: "Which part of a robot is responsible for detecting its environment?",
+      options: ["Actuator", "Sensor", "Controller", "Battery"],
+      correctIndex: 1
+    },
+    {
+      question: "What role does the controller play in a robot?",
+      options: ["Provides power", "Moves the robot", "Processes information", "Detects light"],
+      correctIndex: 2
+    },
+    {
+      question: "Which of these is an example of an actuator?",
+      options: ["Motor", "Camera", "Microphone", "Thermometer"],
+      correctIndex: 0
+    }
+  ],
+  "mod-2": [
+    {
+      question: "What does Ohm's Law state?",
+      options: ["V = I + R", "V = I / R", "V = IR", "V = R / I"],
+      correctIndex: 2
+    },
+    {
+      question: "In a simple series circuit, what powers the LED?",
+      options: ["The resistor", "The battery", "The wire", "The switch"],
+      correctIndex: 1
+    },
+    {
+      question: "What is the purpose of a resistor in a basic circuit?",
+      options: ["Store energy", "Limit current flow", "Generate light", "Increase voltage"],
+      correctIndex: 1
+    }
+  ],
+  "mod-3": [
+    {
+      question: "What is used to store data in a program?",
+      options: ["A loop", "A conditional", "A variable", "A function"],
+      correctIndex: 2
+    },
+    {
+      question: "Which structure is used to repeat an action multiple times?",
+      options: ["Conditional", "Loop", "Variable", "Comment"],
+      correctIndex: 1
+    },
+    {
+      question: "An if/else statement is an example of what kind of logic?",
+      options: ["Looping", "Conditional", "Variable assignment", "Data storage"],
+      correctIndex: 1
+    }
+  ]
+};
+
 let currentModule = null;
+let currentQuiz = null;      // holds the active quiz question array
+let studentAnswers = {};     // { questionIndex: selectedOptionIndex }
 
 // ---------- View switching ----------
 function showView(id) {
@@ -92,7 +152,9 @@ function openModule(id) {
   document.getElementById("module-title-top").textContent = currentModule.title;
   document.getElementById("module-description").textContent = currentModule.content;
   document.getElementById("ai-output").hidden = true;
-  document.getElementById("ai-output").textContent = "";
+  document.getElementById("ai-output").innerHTML = "";
+  currentQuiz = null;
+  studentAnswers = {};
   showView("view-module");
 }
 
@@ -116,30 +178,128 @@ document.getElementById("btn-generate-notes").addEventListener("click", async ()
   // which securely calls the Claude API with currentModule.content and
   // a prompt like: "Summarize this into concise student review notes."
   await fakeDelay(900);
-  output.textContent =
+  const notesText =
     `REVIEW NOTES — ${currentModule.title}\n\n` +
     `• ${currentModule.content}\n\n` +
     `(This is placeholder text. Once connected to the Claude API, real ` +
     `AI-generated review notes will appear here.)`;
+  output.innerHTML = "";
+  const p = document.createElement("p");
+  p.className = "ai-output-text";
+  p.textContent = notesText;
+  output.appendChild(p);
 });
 
 // ---------- AI-assisted quiz generator ----------
 document.getElementById("btn-generate-quiz").addEventListener("click", async () => {
   const output = document.getElementById("ai-output");
   output.hidden = false;
-  output.textContent = "Generating quiz...";
+  output.innerHTML = "Generating quiz...";
 
   // TODO: Replace this mock with a real call to your Firebase Cloud Function,
-  // which calls the Claude API asking for 5 multiple-choice questions
-  // based on currentModule.content, returned as structured JSON.
-  await fakeDelay(900);
-  output.textContent =
-    `QUIZ — ${currentModule.title}\n\n` +
-    `1. (Sample question generated from this module's content)\n` +
-    `   A. Option A   B. Option B   C. Option C   D. Option D\n\n` +
-    `(This is placeholder text. Once connected to the Claude API, a real ` +
-    `AI-generated quiz will appear here.)`;
+  // which calls the Claude API asking for multiple-choice questions based on
+  // currentModule.content, returned as structured JSON in this shape:
+  // [{ question, options: [...], correctIndex }, ...]
+  await fakeDelay(700);
+
+  currentQuiz = SAMPLE_QUIZZES[currentModule.id] || [];
+  studentAnswers = {};
+  renderQuiz();
 });
+
+// ---------- Render the interactive quiz ----------
+function renderQuiz() {
+  const output = document.getElementById("ai-output");
+
+  const questionsHtml = currentQuiz.map((q, qIndex) => `
+    <div class="quiz-question" data-qindex="${qIndex}">
+      <p class="quiz-question-text">${qIndex + 1}. ${q.question}</p>
+      <div class="quiz-options">
+        ${q.options.map((opt, oIndex) => `
+          <button type="button" class="quiz-option" data-qindex="${qIndex}" data-oindex="${oIndex}">
+            ${opt}
+          </button>
+        `).join("")}
+      </div>
+    </div>
+  `).join("");
+
+  output.innerHTML = `
+    <div class="quiz-wrap">
+      <p class="quiz-heading">QUIZ — ${currentModule.title}</p>
+      ${questionsHtml}
+      <button id="btn-submit-quiz" class="btn btn--primary" disabled>Submit quiz</button>
+      <div id="quiz-score" class="quiz-score" hidden></div>
+    </div>
+  `;
+
+  // Wire up option selection
+  output.querySelectorAll(".quiz-option").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const qIndex = Number(btn.dataset.qindex);
+      const oIndex = Number(btn.dataset.oindex);
+      studentAnswers[qIndex] = oIndex;
+
+      // Update visual selection within this question only
+      output.querySelectorAll(`.quiz-option[data-qindex="${qIndex}"]`)
+        .forEach(b => b.classList.remove("quiz-option--selected"));
+      btn.classList.add("quiz-option--selected");
+
+      // Enable submit once every question has an answer
+      const submitBtn = document.getElementById("btn-submit-quiz");
+      submitBtn.disabled = Object.keys(studentAnswers).length < currentQuiz.length;
+    });
+  });
+
+  document.getElementById("btn-submit-quiz").addEventListener("click", gradeQuiz);
+}
+
+// ---------- Grade the quiz and show the score ----------
+function gradeQuiz() {
+  const output = document.getElementById("ai-output");
+  let correctCount = 0;
+
+  currentQuiz.forEach((q, qIndex) => {
+    const selected = studentAnswers[qIndex];
+    const isCorrect = selected === q.correctIndex;
+    if (isCorrect) correctCount++;
+
+    output.querySelectorAll(`.quiz-option[data-qindex="${qIndex}"]`).forEach(btn => {
+      const oIndex = Number(btn.dataset.oindex);
+      btn.disabled = true;
+      if (oIndex === q.correctIndex) {
+        btn.classList.add("quiz-option--correct");
+      } else if (oIndex === selected && !isCorrect) {
+        btn.classList.add("quiz-option--incorrect");
+      }
+    });
+  });
+
+  const submitBtn = document.getElementById("btn-submit-quiz");
+  submitBtn.disabled = true;
+  submitBtn.hidden = true;
+
+  const scoreEl = document.getElementById("quiz-score");
+  scoreEl.hidden = false;
+  const percent = Math.round((correctCount / currentQuiz.length) * 100);
+  scoreEl.innerHTML = `
+    <p class="quiz-score-line">Your score: <strong>${correctCount}/${currentQuiz.length}</strong> (${percent}%)</p>
+    <p class="quiz-score-note">${scoreMessage(percent)}</p>
+  `;
+
+  // TODO: Once Firebase is connected, save this result to Firestore, e.g.:
+  //   db.collection("quizResults").add({
+  //     studentId, moduleId: currentModule.id, score: correctCount,
+  //     total: currentQuiz.length, timestamp: new Date()
+  //   });
+  // This gives you real pre/post performance data for your action research.
+}
+
+function scoreMessage(percent) {
+  if (percent === 100) return "Perfect score! Great grasp of this module.";
+  if (percent >= 70) return "Good job — review the items you missed before moving on.";
+  return "Consider going back to the module notes before retaking this quiz.";
+}
 
 function fakeDelay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
