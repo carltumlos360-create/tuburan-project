@@ -1,4 +1,4 @@
-# T.U.B.U.R.A.N. — Tuburan sang Alam (Starter)
+# T.U.B.U.R.A.N. — Tuburan sang Kaalam (Starter)
 *"Your Source of Knowledge, Anytime, Anywhere."*
 
 
@@ -9,6 +9,21 @@ calls yet. That's intentional: this lets you see and test the full app flow
 real services.
 
 ## How to try it right now
+
+**Important:** now that real Firebase login is connected, double-clicking
+`index.html` directly will **no longer work** — browsers block secure
+module imports (like Firebase) when opening files locally this way. You
+have two options:
+
+**Option A (recommended): Test on your live GitHub Pages link**
+Push your changes (see below), then open your live `https://...github.io/...`
+link — Firebase works correctly there since it's served over HTTPS.
+
+**Option B: Run a local test server**
+If you have VS Code, install the **"Live Server"** extension, right-click
+`index.html` → **"Open with Live Server"**. This serves the file properly
+instead of opening it directly.
+
 
 1. Unzip this folder.
 2. Double-click `index.html` to open it in your browser
@@ -28,6 +43,22 @@ real services.
 | `manifest.json` | Makes the app installable on Android/Windows |
 | `service-worker.js` | Enables offline loading once installed |
 | `icons/` | App icons used for install/home screen |
+
+## Adding your own module PDFs (no Firebase Storage needed)
+
+Since Firebase Storage requires a paid plan, this app hosts module PDFs
+**directly in the GitHub repository** instead — completely free, forever,
+no card required.
+
+To add a new module:
+1. Put your PDF file inside the `modules/` folder (e.g., `modules/my-new-module.pdf`)
+2. In `app.js`, add a new entry to `SAMPLE_MODULES` following the same pattern
+   as the existing three, pointing `fileUrl` to `"modules/my-new-module.pdf"`
+3. Commit and push as usual
+
+**Note on file size:** GitHub works best with files under ~25MB each, and
+free repositories have a soft limit around 1GB total — more than enough
+for a set of PDF learning modules.
 
 ## Next steps (in order)
 
