@@ -10,28 +10,52 @@
 const SAMPLE_MODULES = [
   {
     id: "mod-1",
-    title: "Introduction to Robotics",
-    description: "Basic components of a robot: sensors, actuators, and controllers.",
-    icon: "🤖",
-    fileUrl: "#", // TODO: replace with real Firebase Storage download URL
-    content: "A robot senses its environment, processes information, and acts on it using motors and actuators. This module covers the three core building blocks: sensors (input), controllers (processing), and actuators (output)."
+    title: "Nature of Inquiry and Research",
+    description: "PR2 Nature of Inquiry and Research.",
+    icon: "🌱",
+    fileUrl: "modules/Nature-of-Inquiry-and-Research.pdf",
+    content: "This module introduces the basics of quantitative research, helping students understand the importance of inquiry, identify research problems, and develop evidence-based solutions through systematic investigation."
   },
   {
     id: "mod-2",
-    title: "Basic Circuits",
-    description: "Understanding voltage, current, resistance, and simple circuits.",
+    title: "Identifying the Inquiry and Stating the Problem",
+    description: "PR2 Identifying the Inquiry and Stating the Problem",
     icon: "🔌",
-    fileUrl: "#",
-    content: "Ohm's Law relates voltage, current, and resistance: V = IR. This module walks through building a simple series circuit using a battery, resistor, and LED."
+    fileUrl: "modules/Identifying-the-Inquiry-and-Stating-the-Problem.pdf",
+    content: "This module guides students in identifying a research problem, formulating clear research questions, and developing a focused and relevant statement of the problem for a quantitative study.."
   },
   {
     id: "mod-3",
-    title: "Intro to Programming Logic",
-    description: "Variables, loops, and conditionals used in basic robot programming.",
+    title: "Conceptual Framework and Review of Related Literature",
+    description: "Collect, analyze, and organize related literature and studies to support and strengthen their research..",
     icon: "💻",
-    fileUrl: "#",
-    content: "Programming logic uses variables to store data, conditionals (if/else) to make decisions, and loops to repeat actions — the same building blocks used to program a robot's behavior."
+    fileUrl: "modules/Conceptual-Framework-and-Review-of-Related-Literature.pdf",
+    content: "This module teaches students how to gather, evaluate, and synthesize related literature and studies to support their research, identify knowledge gaps, and strengthen the foundation of their study.."
   }
+  {
+  id: "mod-4",
+  title: "Understanding Data and Ways to Collect Them",
+  description: "This module introduces the methods and tools used to collect accurate and reliable research data.",
+  icon: "📘",
+  fileUrl: "modules/Understanding-Data-and-Ways-to-Collect-Them.pdf",
+  content: "This module focuses on the systematic collection of research data using appropriate methods, instruments and etyhical practices."
+},
+{
+  id: "mod-5",
+  title: "Data Collection Presentation and Analysis",
+  description: "This module teaches students how to collect, organize, present, and analyze quantitative research data to draw meaningful conclusions.",
+  icon: "📘",
+  fileUrl: "modules/Data-Collection-Presentation-and-Analysis.pdf",
+  content: "This module guides students through the process of collecting research data, presenting it using tables and graphs, and analyzing the results with appropriate statistical tools. It emphasizes accurate interpretation of findings to support valid conclusions and research recommendations."
+},
+{
+  id: "mod-6",
+  title: "Research Conclusions and Recommendations",
+  description: "This module teaches students how to draw evidence-based conclusions and formulate practical recommendations from their research findings.",
+  icon: "📘",
+  fileUrl: "modules/Research-Conclusions-and-Recommendations.pdf",
+  content: "This module helps students interpret their research results to develop logical conclusions that answer the research questions."
+},
 ];
 
 // ---------- Sample quiz data (stand-in for AI-generated quiz later) ----------
