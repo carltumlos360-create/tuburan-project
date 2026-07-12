@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>T.U.B.U.R.A.N. — Tuburan sang Alam</title>
+  <meta name="description" content="Your Source of Knowledge, Anytime, Anywhere. Log in, read and download learning modules, and generate AI review notes and quizzes." />
+
+  <!-- PWA setup -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#16213E" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ===================== LOGIN VIEW ===================== -->
+  <section id="view-login" class="view view--active">
+    <div class="login-card">
+      <div class="brand">
+        <span class="brand-mark">T</span>
+        <h1>Tuburan</h1>
+      </div>
+      <p class="brand-eyebrow">T.U.B.U.R.A.N. — Tuburan sang Alam</p>
+      <p class="brand-tagline">Your Source of Knowledge, Anytime, Anywhere.</p>
+
+      <form id="login-form" class="login-form">
+        <label class="field">
+          <span class="field-label">Email</span>
+          <input type="email" id="login-email" placeholder="you@school.edu.ph" required />
+        </label>
+        <label class="field">
+          <span class="field-label">Password</span>
+          <input type="password" id="login-password" placeholder="••••••••" required />
+        </label>
+        <p id="login-error" class="field-error" hidden></p>
+        <button type="submit" class="btn btn--primary btn--block">Log in</button>
+      </form>
+      <p class="login-footnote">Ask your teacher for access if you don't have an account yet.</p>
+    </div>
+  </section>
+
+  <!-- ===================== DASHBOARD VIEW ===================== -->
+  <section id="view-dashboard" class="view">
+    <header class="topbar">
+      <div class="brand brand--compact">
+        <span class="brand-mark">T</span>
+        <span>Tuburan</span>
+      </div>
+      <button id="btn-logout" class="btn btn--ghost">Log out</button>
+    </header>
+
+    <main class="dashboard">
+      <h2 class="dashboard-heading">Your modules</h2>
+      <p class="dashboard-sub">Tap a module to read, download, or generate a reviewer.</p>
+
+      <div id="module-grid" class="module-grid">
+        <!-- Module cards are injected here by app.js -->
+      </div>
+    </main>
+  </section>
+
+  <!-- ===================== MODULE DETAIL VIEW ===================== -->
+  <section id="view-module" class="view">
+    <header class="topbar">
+      <button id="btn-back" class="btn btn--ghost">← Back</button>
+      <span id="module-title-top" class="topbar-title"></span>
+    </header>
+
+    <main class="module-detail">
+      <h2 id="module-title"></h2>
+      <p id="module-description" class="module-description"></p>
+
+      <div class="module-actions">
+        <button id="btn-download" class="btn btn--primary">⬇ Download module</button>
+        <button id="btn-generate-notes" class="btn btn--secondary">✦ Generate review notes</button>
+        <button id="btn-generate-quiz" class="btn btn--secondary">✎ Generate quiz</button>
+      </div>
+
+      <div id="ai-output" class="ai-output" hidden></div>
+    </main>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>
