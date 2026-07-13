@@ -1,10 +1,30 @@
 // =====================================================================
 // HUB — app.js
-// This is a working front-end skeleton. Wherever you see a "TODO" block,
-// that's where Firebase (login, storage) or the Claude API (AI features)
-// will get connected in later phases. For now, everything runs on
-// sample data so you can see and test the full app flow immediately.
+// Wherever you see a "TODO" block, that's where Firebase Storage or the
+// Claude API (AI features) will get connected in later phases. Login is
+// connected to real Firebase Authentication.
 // =====================================================================
+
+// ---------- Firebase setup ----------
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDwKcspSjQTPrBRSjb95v_6GJKxtjXGqJM",
+  authDomain: "tuburan-app.firebaseapp.com",
+  projectId: "tuburan-app",
+  storageBucket: "tuburan-app.firebasestorage.app",
+  messagingSenderId: "394353924137",
+  appId: "1:394353924137:web:d67c7d0b9d3dffa0ac6438"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const auth = getAuth(firebaseApp);
 
 // ---------- Sample data (stand-in for Firestore later) ----------
 const SAMPLE_MODULES = [
@@ -22,40 +42,40 @@ const SAMPLE_MODULES = [
     description: "PR2 Identifying the Inquiry and Stating the Problem",
     icon: "🔌",
     fileUrl: "modules/Identifying-the-Inquiry-and-Stating-the-Problem.pdf",
-    content: "This module guides students in identifying a research problem, formulating clear research questions, and developing a focused and relevant statement of the problem for a quantitative study.."
+    content: "This module guides students in identifying a research problem, formulating clear research questions, and developing a focused and relevant statement of the problem for a quantitative study."
   },
   {
     id: "mod-3",
     title: "Conceptual Framework and Review of Related Literature",
-    description: "Collect, analyze, and organize related literature and studies to support and strengthen their research..",
+    description: "Collect, analyze, and organize related literature and studies to support and strengthen their research.",
     icon: "💻",
     fileUrl: "modules/Conceptual-Framework-and-Review-of-Related-Literature.pdf",
-    content: "This module teaches students how to gather, evaluate, and synthesize related literature and studies to support their research, identify knowledge gaps, and strengthen the foundation of their study.."
-  }
+    content: "This module teaches students how to gather, evaluate, and synthesize related literature and studies to support their research, identify knowledge gaps, and strengthen the foundation of their study."
+  },
   {
-  id: "mod-4",
-  title: "Understanding Data and Ways to Collect Them",
-  description: "This module introduces the methods and tools used to collect accurate and reliable research data.",
-  icon: "📘",
-  fileUrl: "modules/Understanding-Data-and-Ways-to-Collect-Them.pdf",
-  content: "This module focuses on the systematic collection of research data using appropriate methods, instruments and etyhical practices."
-},
-{
-  id: "mod-5",
-  title: "Data Collection Presentation and Analysis",
-  description: "This module teaches students how to collect, organize, present, and analyze quantitative research data to draw meaningful conclusions.",
-  icon: "📘",
-  fileUrl: "modules/Data-Collection-Presentation-and-Analysis.pdf",
-  content: "This module guides students through the process of collecting research data, presenting it using tables and graphs, and analyzing the results with appropriate statistical tools. It emphasizes accurate interpretation of findings to support valid conclusions and research recommendations."
-},
-{
-  id: "mod-6",
-  title: "Research Conclusions and Recommendations",
-  description: "This module teaches students how to draw evidence-based conclusions and formulate practical recommendations from their research findings.",
-  icon: "📘",
-  fileUrl: "modules/Research-Conclusions-and-Recommendations.pdf",
-  content: "This module helps students interpret their research results to develop logical conclusions that answer the research questions."
-},
+    id: "mod-4",
+    title: "Understanding Data and Ways to Collect Them",
+    description: "This module introduces the methods and tools used to collect accurate and reliable research data.",
+    icon: "📘",
+    fileUrl: "modules/Understanding-Data-and-Ways-to-Collect-Them.pdf",
+    content: "This module focuses on the systematic collection of research data using appropriate methods, instruments and ethical practices."
+  },
+  {
+    id: "mod-5",
+    title: "Data Collection Presentation and Analysis",
+    description: "This module teaches students how to collect, organize, present, and analyze quantitative research data to draw meaningful conclusions.",
+    icon: "📘",
+    fileUrl: "modules/Data-Collection-Presentation-and-Analysis.pdf",
+    content: "This module guides students through the process of collecting research data, presenting it using tables and graphs, and analyzing the results with appropriate statistical tools. It emphasizes accurate interpretation of findings to support valid conclusions and research recommendations."
+  },
+  {
+    id: "mod-6",
+    title: "Research Conclusions and Recommendations",
+    description: "This module teaches students how to draw evidence-based conclusions and formulate practical recommendations from their research findings.",
+    icon: "📘",
+    fileUrl: "modules/Research-Conclusions-and-Recommendations.pdf",
+    content: "This module helps students interpret their research results to develop logical conclusions that answer the research questions."
+  }
 ];
 
 // ---------- Sample quiz data (stand-in for AI-generated quiz later) ----------
@@ -65,52 +85,103 @@ const SAMPLE_MODULES = [
 const SAMPLE_QUIZZES = {
   "mod-1": [
     {
-      question: "Which part of a robot is responsible for detecting its environment?",
-      options: ["Actuator", "Sensor", "Controller", "Battery"],
+      question: "What is the main purpose of conducting research?",
+      options: ["To copy other studies", "To solve a problem through systematic inquiry", "To avoid asking questions", "To skip data collection"],
       correctIndex: 1
     },
     {
-      question: "What role does the controller play in a robot?",
-      options: ["Provides power", "Moves the robot", "Processes information", "Detects light"],
-      correctIndex: 2
+      question: "Quantitative research primarily deals with what kind of data?",
+      options: ["Numerical data", "Personal opinions only", "Stories and narratives", "Drawings"],
+      correctIndex: 0
     },
     {
-      question: "Which of these is an example of an actuator?",
-      options: ["Motor", "Camera", "Microphone", "Thermometer"],
-      correctIndex: 0
+      question: "Why is identifying a research problem an important first step?",
+      options: ["It is optional", "It gives the study focus and direction", "It replaces the need for data", "It is done after writing conclusions"],
+      correctIndex: 1
     }
   ],
   "mod-2": [
     {
-      question: "What does Ohm's Law state?",
-      options: ["V = I + R", "V = I / R", "V = IR", "V = R / I"],
-      correctIndex: 2
-    },
-    {
-      question: "In a simple series circuit, what powers the LED?",
-      options: ["The resistor", "The battery", "The wire", "The switch"],
+      question: "What is a research question?",
+      options: ["A guess with no basis", "A clear question the study aims to answer", "The title of the study", "The conclusion of the study"],
       correctIndex: 1
     },
     {
-      question: "What is the purpose of a resistor in a basic circuit?",
-      options: ["Store energy", "Limit current flow", "Generate light", "Increase voltage"],
+      question: "A good statement of the problem should be:",
+      options: ["Vague and broad", "Focused and clearly defined", "Unrelated to the topic", "Written last"],
+      correctIndex: 1
+    },
+    {
+      question: "What usually comes first in the research process?",
+      options: ["Writing the conclusion", "Identifying the inquiry/problem", "Collecting data", "Presenting results"],
       correctIndex: 1
     }
   ],
   "mod-3": [
     {
-      question: "What is used to store data in a program?",
-      options: ["A loop", "A conditional", "A variable", "A function"],
-      correctIndex: 2
-    },
-    {
-      question: "Which structure is used to repeat an action multiple times?",
-      options: ["Conditional", "Loop", "Variable", "Comment"],
+      question: "What is the purpose of a Review of Related Literature (RRL)?",
+      options: ["To copy previous studies word-for-word", "To support and strengthen the study with existing research", "To replace the researcher's own data", "To avoid citing sources"],
       correctIndex: 1
     },
     {
-      question: "An if/else statement is an example of what kind of logic?",
-      options: ["Looping", "Conditional", "Variable assignment", "Data storage"],
+      question: "A conceptual framework helps a researcher to:",
+      options: ["Ignore existing theories", "Visually organize the relationship between study variables", "Skip the literature review", "Avoid forming a hypothesis"],
+      correctIndex: 1
+    },
+    {
+      question: "Reviewing related literature can help identify:",
+      options: ["Grammar mistakes only", "Gaps in existing knowledge", "The researcher's grade", "Nothing useful"],
+      correctIndex: 1
+    }
+  ],
+  "mod-4": [
+    {
+      question: "Which of these is an example of a data collection method?",
+      options: ["Guessing", "Survey questionnaire", "Ignoring participants", "Skipping the study"],
+      correctIndex: 1
+    },
+    {
+      question: "Why is it important to follow ethical practices when collecting data?",
+      options: ["It is not important", "To protect participants and ensure honest results", "To make the study longer", "To avoid using instruments"],
+      correctIndex: 1
+    },
+    {
+      question: "A data collection instrument should be:",
+      options: ["Random and untested", "Appropriate and reliable for the study", "Copied without permission", "Unrelated to the research questions"],
+      correctIndex: 1
+    }
+  ],
+  "mod-5": [
+    {
+      question: "What is commonly used to visually present quantitative data?",
+      options: ["Tables and graphs", "Random guesses", "Personal opinions", "Unrelated images"],
+      correctIndex: 0
+    },
+    {
+      question: "Why do researchers analyze collected data?",
+      options: ["To make the paper longer", "To draw meaningful and accurate conclusions", "To avoid using statistics", "To skip the discussion section"],
+      correctIndex: 1
+    },
+    {
+      question: "Accurate interpretation of results supports:",
+      options: ["Random conclusions", "Valid conclusions and recommendations", "Ignoring the data", "Repeating the introduction"],
+      correctIndex: 1
+    }
+  ],
+  "mod-6": [
+    {
+      question: "A research conclusion should be based on:",
+      options: ["Personal assumptions only", "The actual findings/results of the study", "Unrelated topics", "Guesses made before the study"],
+      correctIndex: 1
+    },
+    {
+      question: "What is the purpose of research recommendations?",
+      options: ["To criticize the researcher", "To suggest practical actions based on the findings", "To repeat the problem statement", "To replace the conclusion"],
+      correctIndex: 1
+    },
+    {
+      question: "Conclusions in a research paper should directly answer:",
+      options: ["Unrelated questions", "The research questions stated earlier in the study", "Only the title", "Nothing in particular"],
       correctIndex: 1
     }
   ]
@@ -132,24 +203,55 @@ document.getElementById("login-form").addEventListener("submit", (e) => {
   const email = document.getElementById("login-email").value.trim();
   const password = document.getElementById("login-password").value;
   const errorEl = document.getElementById("login-error");
+  const submitBtn = e.target.querySelector("button[type='submit']");
 
-  // TODO: Replace this block with real Firebase Authentication:
-  //   firebase.auth().signInWithEmailAndPassword(email, password)
-  //     .then(() => showView("view-dashboard"))
-  //     .catch(err => { errorEl.textContent = err.message; errorEl.hidden = false; });
-  if (email && password) {
-    errorEl.hidden = true;
+  errorEl.hidden = true;
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Logging in...";
+
+  signInWithEmailAndPassword(auth, email, password)
+    .then(() => {
+      renderModuleGrid();
+      showView("view-dashboard");
+    })
+    .catch((err) => {
+      errorEl.textContent = friendlyAuthError(err.code);
+      errorEl.hidden = false;
+    })
+    .finally(() => {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Log in";
+    });
+});
+
+function friendlyAuthError(code) {
+  switch (code) {
+    case "auth/invalid-email":
+      return "Please enter a valid email address.";
+    case "auth/user-not-found":
+    case "auth/invalid-credential":
+      return "No account found with that email and password.";
+    case "auth/wrong-password":
+      return "Incorrect password. Please try again.";
+    case "auth/too-many-requests":
+      return "Too many attempts. Please wait a moment and try again.";
+    default:
+      return "Login failed. Please check your details and try again.";
+  }
+}
+
+document.getElementById("btn-logout").addEventListener("click", () => {
+  signOut(auth).then(() => showView("view-login"));
+});
+
+// ---------- Keep user logged in across page refreshes ----------
+onAuthStateChanged(auth, (user) => {
+  if (user) {
     renderModuleGrid();
     showView("view-dashboard");
   } else {
-    errorEl.textContent = "Please enter both email and password.";
-    errorEl.hidden = false;
+    showView("view-login");
   }
-});
-
-document.getElementById("btn-logout").addEventListener("click", () => {
-  // TODO: Replace with firebase.auth().signOut()
-  showView("view-login");
 });
 
 // ---------- Dashboard: render module cards ----------
@@ -187,9 +289,12 @@ document.getElementById("btn-back").addEventListener("click", () => {
 });
 
 document.getElementById("btn-download").addEventListener("click", () => {
-  // TODO: Replace with real Firebase Storage file download:
-  //   window.location.href = currentModule.fileUrl;
-  alert(`(Demo) This would download: ${currentModule.title}.pdf`);
+  const link = document.createElement("a");
+  link.href = currentModule.fileUrl;
+  link.download = "";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 });
 
 // ---------- AI-assisted review notes ----------
@@ -335,6 +440,3 @@ if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("service-worker.js").catch(console.error);
   });
 }
-
-// ---------- Start on login screen ----------
-showView("view-login");
