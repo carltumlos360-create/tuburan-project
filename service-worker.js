@@ -1,8 +1,4 @@
-// Basic service worker: caches core files so the app can install
-// and reopen even with a weak/no connection. Expand the cache list
-// as you add more files (e.g., module PDFs you want available offline).
-
-const CACHE_NAME = "hub-cache-v2";
+const CACHE_NAME = "hub-cache-v3";
 const CORE_ASSETS = [
   "index.html",
   "styles.css",
@@ -37,6 +33,21 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
+  // Network-first for app.js so updates are picked up immediately;
+  // cache is only used as a fallback when offline
+  if (event.request.url.includes("app.js")) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then((cached) => cached || fetch(event.request))
   );
