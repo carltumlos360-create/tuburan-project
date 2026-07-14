@@ -376,7 +376,7 @@ document.getElementById("btn-generate-quiz").addEventListener("click", async () 
     studentAnswers = {};
     renderQuiz();
   } catch (err) {
-    currentQuiz = pickRandomQuestions(SAMPLE_QUIZZES[currentModule.id] || [], 3);
+    currentQuiz = pickRandomQuestions(SAMPLE_QUIZZES[currentModule.id] || [], 15);
     studentAnswers = {};
     renderQuiz();
 
