@@ -25,6 +25,7 @@ const firebaseConfig = {
 
 const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
+const AI_WORKER_URL = "https://tuburan-ai.carltumlos360.workers.dev/";
 
 // ---------- Sample data (stand-in for Firestore later) ----------
 const SAMPLE_MODULES = [
@@ -301,22 +302,44 @@ document.getElementById("btn-download").addEventListener("click", () => {
 document.getElementById("btn-generate-notes").addEventListener("click", async () => {
   const output = document.getElementById("ai-output");
   output.hidden = false;
-  output.textContent = "Generating review notes...";
-
-  // TODO: Replace this mock with a real call to your Firebase Cloud Function,
-  // which securely calls the Claude API with currentModule.content and
-  // a prompt like: "Summarize this into concise student review notes."
-  await fakeDelay(900);
-  const notesText =
-    `REVIEW NOTES — ${currentModule.title}\n\n` +
-    `• ${currentModule.content}\n\n` +
-    `(This is placeholder text. Once connected to the Claude API, real ` +
-    `AI-generated review notes will appear here.)`;
   output.innerHTML = "";
-  const p = document.createElement("p");
-  p.className = "ai-output-text";
-  p.textContent = notesText;
-  output.appendChild(p);
+  const loadingP = document.createElement("p");
+  loadingP.className = "ai-output-text";
+  loadingP.textContent = "Generating review notes...";
+  output.appendChild(loadingP);
+
+  try {
+    const response = await fetch(AI_WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "notes",
+        moduleTitle: currentModule.title,
+        moduleContent: currentModule.content
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || data.error) {
+      throw new Error(data.error ? JSON.stringify(data.error) : "Unknown error from AI service");
+    }
+
+    output.innerHTML = "";
+    const p = document.createElement("p");
+    p.className = "ai-output-text";
+    p.textContent = data.result || "No notes were returned. Please try again.";
+    output.appendChild(p);
+  } catch (err) {
+    output.innerHTML = "";
+    const p = document.createElement("p");
+    p.className = "ai-output-text";
+    p.textContent =
+      `Couldn't generate AI review notes right now.\n\n` +
+      `Error details: ${err.message}\n\n` +
+      `Showing the module summary instead:\n\n${currentModule.content}`;
+    output.appendChild(p);
+  }
 });
 
 // ---------- AI-assisted quiz generator ----------
@@ -325,16 +348,53 @@ document.getElementById("btn-generate-quiz").addEventListener("click", async () 
   output.hidden = false;
   output.innerHTML = "Generating quiz...";
 
-  // TODO: Replace this mock with a real call to your Firebase Cloud Function,
-  // which calls the Claude API asking for multiple-choice questions based on
-  // currentModule.content, returned as structured JSON in this shape:
-  // [{ question, options: [...], correctIndex }, ...]
-  await fakeDelay(700);
+  try {
+    const response = await fetch(AI_WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "quiz",
+        moduleTitle: currentModule.title,
+        moduleContent: currentModule.content
+      })
+    });
 
-  currentQuiz = SAMPLE_QUIZZES[currentModule.id] || [];
-  studentAnswers = {};
-  renderQuiz();
+    const data = await response.json();
+
+    if (!response.ok || data.error) {
+      throw new Error(data.error ? JSON.stringify(data.error) : "Unknown error from AI service");
+    }
+
+    const cleanText = (data.result || "").replace(/```json|```/g, "").trim();
+    const parsedQuiz = JSON.parse(cleanText);
+
+    if (!Array.isArray(parsedQuiz) || parsedQuiz.length === 0) {
+      throw new Error("AI returned an unexpected format");
+    }
+
+    currentQuiz = parsedQuiz;
+    studentAnswers = {};
+    renderQuiz();
+  } catch (err) {
+    currentQuiz = pickRandomQuestions(SAMPLE_QUIZZES[currentModule.id] || [], 3);
+    studentAnswers = {};
+    renderQuiz();
+
+    const notice = document.createElement("p");
+    notice.className = "ai-output-text";
+    notice.style.marginTop = "12px";
+    notice.style.fontSize = "12.5px";
+    notice.style.color = "#57545F";
+    notice.textContent = `(AI quiz generation failed — showing practice questions instead. Details: ${err.message})`;
+    output.appendChild(notice);
+  }
 });
+
+// ---------- Pick a random subset of questions (fresh set each time) ----------
+function pickRandomQuestions(pool, count) {
+  const shuffled = [...pool].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, Math.min(count, shuffled.length));
+}
 
 // ---------- Render the interactive quiz ----------
 function renderQuiz() {
@@ -362,19 +422,16 @@ function renderQuiz() {
     </div>
   `;
 
-  // Wire up option selection
   output.querySelectorAll(".quiz-option").forEach(btn => {
     btn.addEventListener("click", () => {
       const qIndex = Number(btn.dataset.qindex);
       const oIndex = Number(btn.dataset.oindex);
       studentAnswers[qIndex] = oIndex;
 
-      // Update visual selection within this question only
       output.querySelectorAll(`.quiz-option[data-qindex="${qIndex}"]`)
         .forEach(b => b.classList.remove("quiz-option--selected"));
       btn.classList.add("quiz-option--selected");
 
-      // Enable submit once every question has an answer
       const submitBtn = document.getElementById("btn-submit-quiz");
       submitBtn.disabled = Object.keys(studentAnswers).length < currentQuiz.length;
     });
@@ -415,23 +472,12 @@ function gradeQuiz() {
     <p class="quiz-score-line">Your score: <strong>${correctCount}/${currentQuiz.length}</strong> (${percent}%)</p>
     <p class="quiz-score-note">${scoreMessage(percent)}</p>
   `;
-
-  // TODO: Once Firebase is connected, save this result to Firestore, e.g.:
-  //   db.collection("quizResults").add({
-  //     studentId, moduleId: currentModule.id, score: correctCount,
-  //     total: currentQuiz.length, timestamp: new Date()
-  //   });
-  // This gives you real pre/post performance data for your action research.
 }
 
 function scoreMessage(percent) {
   if (percent === 100) return "Perfect score! Great grasp of this module.";
   if (percent >= 70) return "Good job — review the items you missed before moving on.";
   return "Consider going back to the module notes before retaking this quiz.";
-}
-
-function fakeDelay(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 // ---------- Register service worker (enables PWA install + offline) ----------
