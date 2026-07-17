@@ -26,6 +26,16 @@ const firebaseConfig = {
 const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
 const AI_WORKER_URL = "https://tuburan-ai.carltumlos360.workers.dev/";
+const SHEET_LOG_URL = "https://script.google.com/macros/s/AKfycbwqED7k1VnUw0rMunFGP8Py7S-ELqM1RxjKLXz0g2uCUHqTNKe7M_TvTSv8_wGUpMY/exec";
+
+function logToSheet(payload) {
+  fetch(SHEET_LOG_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(payload)
+  }).catch(() => {});
+}
 
 // ---------- Sample data (stand-in for Firestore later) ----------
 const SAMPLE_MODULES = [
@@ -189,6 +199,7 @@ const SAMPLE_QUIZZES = {
 };
 
 let currentModule = null;
+let currentUser = null;
 let currentQuiz = null;      // holds the active quiz question array
 let studentAnswers = {};     // { questionIndex: selectedOptionIndex }
 
@@ -211,7 +222,9 @@ document.getElementById("login-form").addEventListener("submit", (e) => {
   submitBtn.textContent = "Logging in...";
 
   signInWithEmailAndPassword(auth, email, password)
-    .then(() => {
+    .then((userCredential) => {
+      currentUser = userCredential.user;
+      logToSheet({ email: currentUser.email, event: "Login" });
       renderModuleGrid();
       showView("view-dashboard");
     })
@@ -468,7 +481,14 @@ function gradeQuiz() {
   const scoreEl = document.getElementById("quiz-score");
   scoreEl.hidden = false;
   const percent = Math.round((correctCount / currentQuiz.length) * 100);
-  scoreEl.innerHTML = `
+  logToSheet({
+    email: currentUser ? currentUser.email : "unknown",
+    event: "Quiz Score",
+    moduleTitle: currentModule.title,
+    score: correctCount,
+    total: currentQuiz.length,
+    percent: percent
+  });
     <p class="quiz-score-line">Your score: <strong>${correctCount}/${currentQuiz.length}</strong> (${percent}%)</p>
     <p class="quiz-score-note">${scoreMessage(percent)}</p>
   `;
