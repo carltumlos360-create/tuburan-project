@@ -489,6 +489,8 @@ function gradeQuiz() {
     total: currentQuiz.length,
     percent: percent
   });
+
+  scoreEl.innerHTML = `
     <p class="quiz-score-line">Your score: <strong>${correctCount}/${currentQuiz.length}</strong> (${percent}%)</p>
     <p class="quiz-score-note">${scoreMessage(percent)}</p>
   `;
